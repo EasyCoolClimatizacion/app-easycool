@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Mantenimiento IA v6.0</title>
+    <style>
+        :root { --bg-color: #1a1a1a; --card-color: #2b2b2b; --text-color: #f0f0f0; --primary-color: #28a745; --input-bg: #333; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1, h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group-wide { grid-column: 1 / -1; }
+        label { margin-bottom: 5px; font-weight: 500; }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 95%; padding: 12px 10px; background-color: var(--input-bg); border: 1px solid #555; color: var(--text-color); border-radius: 5px; font-family: inherit; font-size: 1em;
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background-color: var(--input-bg); padding: 15px; border-radius: 5px; }
+        .checkbox-item { display: flex; align-items: center; }
+        .checkbox-item input { margin-right: 10px; width: 18px; height: 18px; }
+        .btn { background-color: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1em; width: 100%; margin-top: 10px; }
+        .btn:disabled { background-color: #555; }
+        #resultado { background-color: var(--input-bg); border: 1px solid #555; padding: 15px; border-radius: 5px; margin-top: 20px; min-height: 200px; white-space: pre-wrap; }
+        .back-link { color: var(--primary-color); text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Volver al Menú</a>
+        <h1>Informe de Mantenimiento IA v6.0</h1>
+
+        <h2>Datos del Cliente</h2>
+        <div class="form-grid">
+            <div class="form-group"><label for="rut">RUT</label><input type="text" id="rut" readonly></div>
+            <div class="form-group"><label for="nombre">Nombre</label><input type="text" id="nombre" readonly></div>
+            <div class="form-group"><label for="direccion">Dirección</label><input type="text" id="direccion" readonly></div>
+        </div>
+
+        <h2>Detalles del Equipo</h2>
+        <div class="form-grid">
+            <div class="form-group"><label for="equipo_ubicacion">Ubicación Equipo</label><input type="text" id="equipo_ubicacion" placeholder="Ej: Living, Dormitorio Principal"></div>
+            <div class="form-group"><label for="marca_modelo">Marca y Modelo</label><input type="text" id="marca_modelo" placeholder="Ej: Anwo 12000 BTU"></div>
+        </div>
+
+        <h2>Checklist de Tareas Realizadas</h2>
+        <div class="checkbox-group" id="checklist_tareas">
+            <div class="checkbox-item"><input type="checkbox" id="limpieza_filtros" value="Limpieza de filtros de unidad interior"> <label for="limpieza_filtros">Limpieza de filtros UI</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="limpieza_serpentin_ui" value="Limpieza de serpentín y turbina UI (con vapor/químico)"> <label for="limpieza_serpentin_ui">Limpieza serpentín/turbina UI</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="limpieza_serpentin_ue" value="Limpieza de serpentín unidad exterior"> <label for="limpieza_serpentin_ue">Limpieza serpentín UE</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="revision_drenaje" value="Revisión y limpieza de bandeja y línea de drenaje"> <label for="revision_drenaje">Revisión drenaje</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="revision_electrica" value="Revisión de conexiones eléctricas y apriete de bornes"> <label for="revision_electrica">Revisión eléctrica</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="revision_fugas" value="Detección de fugas (visual/electrónica)"> <label for="revision_fugas">Detección de fugas</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="prueba_funcionamiento" value="Prueba de funcionamiento general (Frío/Calor)"> <label for="prueba_funcionamiento">Prueba Frío/Calor</label></div>
+        </div>
+
+        <h2>Parámetros Técnicos</h2>
+        <div class="form-grid">
+            <div class="form-group"><label for="presion_baja">Presión Baja (PSI)</label><input type="number" id="presion_baja" placeholder="Ej: 110"></div>
+            <div class="form-group"><label for="presion_alta">Presión Alta (PSI)</label><input type="number" id="presion_alta" placeholder="Ej: 350"></div>
+            <div class="form-group"><label for="temp_inyeccion">Temp. Inyección UI (°C)</label><input type="number" id="temp_inyeccion" placeholder="Ej: 8"></div>
+            <div class="form-group"><label for="temp_retorno">Temp. Retorno UI (°C)</label><input type="number" id="temp_retorno" placeholder="Ej: 22"></div>
+            <div class="form-group"><label for="amperaje_nominal">Amperaje Nominal</label><input type="text" id="amperaje_nominal" placeholder="Ej: 5.5 A"></div>
+            <div class="form-group"><label for="amperaje_arranque">Amperaje Arranque</label><input type="text" id="amperaje_arranque" placeholder="Ej: 3.0 A"></div>
+        </div>
+
+        <div class="form-group form-group-wide" style="margin-top: 15px;">
+            <label for="observaciones">Observaciones y Recomendaciones</label>
+            <textarea id="observaciones" placeholder="Ej: El equipo queda 100% operativo. Se recomienda cambiar pilas del control remoto."></textarea>
+        </div>
+
+        <button id="btnGenerar" class="btn">Generar Informe</button>
+        <button id="btnCopiar" class="btn" style="background-color: #6c757d; display: none;">Copiar Informe</button>
+        
+        <h2>Informe de Mantenimiento Generado</h2>
+        <pre id="resultado">Esperando generación...</pre>
+    </div>
+
+    <script src="informe_mantenimiento_v6.0.js"></script>
+</body>
+</html>
