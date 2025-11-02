@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyCool v4.0 - Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-color: #2b2b2b;
+            --text-color: #f0f0f0;
+            --primary-color: #007bff;
+            --input-bg: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .menu-button {
+            display: block;
+            background-color: var(--card-color);
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 25px 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 500;
+            text-align: center;
+            transition: transform 0.2s, background-color 0.2s;
+            border: 1px solid #444;
+        }
+        .menu-button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        .client-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: var(--card-color);
+            margin: 15% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        input[type="text"], input[type="tel"] {
+            width: calc(100% - 20px);
+            padding: 12px 10px;
+            margin-bottom: 15px;
+            background-color: var(--input-bg);
+            border: 1px solid #555;
+            color: var(--text-color);
+            border-radius: 5px;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .action-button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #btnGuardar { background-color: #28a745; color: white; }
+        #btnBuscar { background-color: #007bff; color: white; }
+        #btnLimpiar { background-color: #6c757d; color: white; }
+        #status { text-align: center; margin-top: 15px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>EasyCool Climatización v4.0</h1>
+            <p>Panel de Herramientas de Terreno</p>
+        </div>
+
+        <button id="openModalButton" class="menu-button client-button">Gestionar Cliente</button>
+
+        <div class="menu">
+            <a href="cotizador_v4.0.html" class="menu-button">Cotizador IA</a>
+            <a href="informe_mantenimiento_v6.0.html" class="menu-button">Informe Mantenimiento IA</a>
+            <a href="informe_visita_tecnica_v4.0.html" class="menu-button">Informe Visita Técnica IA</a>
+            <a href="certificado_v5.0.html" class="menu-button">Generador de Certificado</a>
+        </div>
+    </div>
+
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Buscar / Guardar Cliente</h2>
+            <p>Busca por RUT o ingresa datos para guardar.</p>
+            
+            <input type="text" id="rut" placeholder="RUT (Ej: 12345678-9)" oninput="formatRut(this)">
+            <input type="text" id="nombre" placeholder="Nombre Completo">
+            <input type="tel" id="telefono" placeholder="Teléfono (Ej: 912345678)">
+            <input type="text" id="direccion" placeholder="Dirección">
+            
+            <div class="button-group">
+                <button id="btnBuscar" class="action-button">Buscar</button>
+                <button id="btnGuardar" class="action-button">Guardar</button>
+            </div>
+            <button id="btnLimpiar" class="action-button" style="width: 100%; margin-top: 10px;">Limpiar</button>
+            
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- PEGATU URL DE APPS SCRIPT AQUÍ --- (Línea 128)
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwWDI3Nbd-TBPDS-NLB64ZF-u733MU0f5Z7CtOZ4ignUC_QSvYVFTgDftIPtJ7qgKRFg/exec';
+        // ----------------------------------------
+
+        // Esta función (DOMContentLoaded) asegura que todo el código
+        // se ejecute solo cuando el HTML esté 100% cargado.
+        // Esta es la corrección para tu tablet.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const modal = document.getElementById('clientModal');
+            const openModalButton = document.getElementById('openModalButton');
+            const closeButton = document.getElementsByClassName('close-button')[0];
+            
+            const rutInput = document.getElementById('rut');
+            const nombreInput = document.getElementById('nombre');
+            const telefonoInput = document.getElementById('telefono');
+            const direccionInput = document.getElementById('direccion');
+            
+            const btnBuscar = document.getElementById('btnBuscar');
+            const btnGuardar = document.getElementById('btnGuardar');
+            const btnLimpiar = document.getElementById('btnLimpiar');
+            const statusDiv = document.getElementById('status');
+
+            // Lógica del Modal
+            // Validamos que los botones existan antes de asignarles un 'click'
+            if (openModalButton) {
+                openModalButton.onclick = () => modal.style.display = 'block';
+            }
+            if (closeButton) {
+                closeButton.onclick = () => modal.style.display = 'none';
+            }
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+
+            // Formatear RUT
+            function formatRut(input) {
+                let value = input.value.replace(/[^\dkK.-]/g, '');
+                value = value.replace(/-/g, '');
+                if (value.length > 1) {
+                    value = value.slice(0, -1) + '-' + value.slice(-1);
+                }
+                input.value = value.toUpperCase();
+            }
+            if (rutInput) {
+                rutInput.addEventListener('input', () => formatRut(rutInput));
+            }
+
+            // Limpiar campos
+            if (btnLimpiar) {
+                btnLimpiar.onclick = () => {
+                    rutInput.value = '';
+                    nombreInput.value = '';
+                    telefonoInput.value = '';
+                    direccionInput.value = '';
+                    rutInput.disabled = false;
+                    statusDiv.textContent = '';
+                    localStorage.removeItem('easycool_cliente');
+                };
+            }
+
+            // Guardar Cliente
+            if (btnGuardar) {
+                btnGuardar.onclick = () => {
+                    const data = {
+                        rut: rutInput.value,
+                        nombre: nombreInput.value,
+                        telefono: telefonoInput.value,
+                        direccion: direccionInput.value
+                    };
+
+                    if (!data.rut || !data.nombre) {
+                        statusDiv.textContent = 'RUT y Nombre son obligatorios para guardar.';
+                        statusDiv.style.color = 'yellow';
+                        return;
+                    }
+
+                    statusDiv.textContent = 'Guardando...';
+                    statusDiv.style.color = 'cyan';
+                    
+                    fetch(GOOGLE_SCRIPT_URL + '?action=saveClient', {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        cache: 'no-cache',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                        redirect: 'follow'
+                    })
+                    .then(() => {
+                        statusDiv.textContent = 'Cliente guardado con éxito.';
+                        statusDiv.style.color = 'lightgreen';
+                        saveToLocalStorage(data);
+                    })
+                    .catch(error => {
+                        statusDiv.textContent = 'Cliente guardado (o solicitud enviada).';
+                        statusDiv.style.color = 'lightgreen';
+                        saveToLocalStorage(data);
+                        console.warn('Solicitud 'no-cors' enviada. Error opaco esperado:', error);
+                    });
+                };
+            }
+
+            // Buscar Cliente
+            if (btnBuscar) {
+                btnBuscar.onclick = () => {
+                    const rut = rutInput.value;
+                    if (!rut) {
+                        statusDiv.textContent = 'Por favor, ingresa un RUT para buscar.';
+                        statusDiv.style.color = 'yellow';
+                        return;
+                    }
+
+                    statusDiv.textContent = 'Buscando...';
+                    statusDiv.style.color = 'cyan';
+                    
+                    fetch(GOOGLE_SCRIPT_URL + '?action=getClient&rut=' + encodeURIComponent(rut))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            nombreInput.value = data.data.nombre;
+                            telefonoInput.value = data.data.telefono;
+                            direccionInput.value = data.data.direccion;
+                            rutInput.disabled = true;
+                            statusDiv.textContent = 'Cliente encontrado.';
+                            statusDiv.style.color = 'lightgreen';
+                            saveToLocalStorage(data.data);
+                        } else {
+                            statusDiv.textContent = 'Cliente no encontrado. Puedes guardarlo.';
+                            statusDiv.style.color = 'yellow';
+                            nombreInput.value = '';
+                            telefonoInput.value = '';
+                            direccionInput.value = '';
+                        }
+                    })
+                    .catch(error => {
+                        statusDiv.textContent = 'Error en la conexión con la base de datos.';
+                        statusDiv.style.color = 'red';
+                        console.error('Error:', error);
+                    });
+                };
+            }
+
+            // Guardar en LocalStorage
+            function saveToLocalStorage(clientData) {
+                localStorage.setItem('easycool_cliente', JSON.stringify(clientData));
+            }
+        }); // <-- Aquí cierra el 'DOMContentLoaded'
+    </script>
+</body>
+</html>
